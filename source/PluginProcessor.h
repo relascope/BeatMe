@@ -6,6 +6,8 @@
 #include "ipps.h"
 #endif
 
+#include "BTrack.h"
+
 class PluginProcessor : public juce::AudioProcessor
 {
 public:

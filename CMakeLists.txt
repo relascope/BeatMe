@@ -93,13 +93,50 @@ juce_add_plugin("${PROJECT_NAME}"
 # Without running into ODR violations
 add_library(SharedCode INTERFACE)
 
+# ===============================
+# BTrack (vendor library)
+# ===============================
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SAMPLERATE REQUIRED samplerate IMPORTED_TARGET)
+
+
+file(GLOB BTRACK_SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/BTrack/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/BTrack/libs/kiss_fft130/*.c"
+)
+
+add_library(BTrack STATIC ${BTRACK_SOURCES})
+
+target_include_directories(BTrack
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/BTrack/src"
+        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/BTrack/libs/kiss_fft130"
+        ${SAMPLERATE_INCLUDE_DIRS}
+
+)	
+
+target_link_libraries(BTrack
+    PUBLIC
+        PkgConfig::SAMPLERATE
+)
+
+# Use bundled KissFFT
+target_compile_definitions(BTrack
+    PUBLIC
+        USE_KISS_FFT
+)
+
+### END BTRACK
+
+
 clap_juce_extensions_plugin(TARGET "${PROJECT_NAME}"
     CLAP_ID "${BUNDLE_ID}"
     CLAP_FEATURES audio-effect)
 
 # Enable fast math, C++20 and a few other target defaults
 include(SharedCodeDefaults)
-
 
 # Manually list all .h and .cpp files for the plugin
 # If you are like me, you'll use globs for your sanity.
@@ -143,6 +180,7 @@ target_compile_definitions(SharedCode
 target_link_libraries(SharedCode
     INTERFACE
     Assets
+    BTrack
     melatonin_inspector
     juce_audio_utils
     juce_audio_processors
