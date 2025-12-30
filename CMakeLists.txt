@@ -188,23 +188,15 @@ target_compile_definitions(asio
         ASIO_STANDALONE
 )
 
-target_compile_definitions(Link
-    PUBLIC
-        ASIO_STANDALONE
-)
-
-target_compile_definitions(Link
+# Add Link platform definitions
+target_compile_definitions(SharedCode
     INTERFACE
         LINK_PLATFORM_ASIO
         LINK_PLATFORM_MACOS
+        LINK_PLATFORM_STANDALONE
 )
 
 add_subdirectory(vendor/ableton-link EXCLUDE_FROM_ALL)
-
-target_link_libraries(Link
-    PUBLIC
-        asio
-)
 
 target_include_directories(SharedCode
     INTERFACE
