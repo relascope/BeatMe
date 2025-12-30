@@ -13,6 +13,7 @@ _deps
 # It's nice to have the Builds folder exist, to remind us where it is
 Builds/*
 !Builds/.gitkeep
+build/*
 
 # This should never exist
 Install/*

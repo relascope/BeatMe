@@ -5,18 +5,27 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 {
     juce::ignoreUnused (processorRef);
 
+    
     addAndMakeVisible (inspectButton);
 
-    // this chunk of code instantiates and opens the melatonin inspector
-    inspectButton.onClick = [&] {
-        if (!inspector)
-        {
-            inspector = std::make_unique<melatonin::Inspector> (*this);
-            inspector->onClose = [this]() { inspector.reset(); };
-        }
-
-        inspector->setVisible (true);
-    };
+//    // this chunk of code instantiates and opens the melatonin inspector
+//    inspectButton.onClick = [&] {
+//        if (!inspector)
+//        {
+//            inspector = std::make_unique<melatonin::Inspector> (*this);
+//            inspector->onClose = [this]() { inspector.reset(); };
+//        }
+//
+//        inspector->setVisible (true);
+//    };
+    
+    
+    tempoLabel.setText ("--.- BPM", juce::dontSendNotification);
+    tempoLabel.setJustificationType (juce::Justification::centred);
+    
+ 
+    addAndMakeVisible (tempoLabel);
+    startTimerHz (30);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -27,22 +36,35 @@ PluginEditor::~PluginEditor()
 {
 }
 
+
 void PluginEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    
+//    auto area = getLocalBounds();
+//    g.setColour (juce::Colours::white);
+//    g.setFont (16.0f);
+//    auto helloWorld = juce::String ("Hello from ") + PRODUCT_NAME_WITHOUT_VERSION + " v" VERSION + " running in " + CMAKE_BUILD_TYPE;
+//    g.drawText (helloWorld, area.removeFromTop (150), juce::Justification::centred, false);
 
-    auto area = getLocalBounds();
-    g.setColour (juce::Colours::white);
-    g.setFont (16.0f);
-    auto helloWorld = juce::String ("Hello from ") + PRODUCT_NAME_WITHOUT_VERSION + " v" VERSION + " running in " + CMAKE_BUILD_TYPE;
-    g.drawText (helloWorld, area.removeFromTop (150), juce::Justification::centred, false);
-}
+ }
 
 void PluginEditor::resized()
 {
     // layout the positions of your child components here
     auto area = getLocalBounds();
-    area.removeFromBottom(50);
-    inspectButton.setBounds (getLocalBounds().withSizeKeepingCentre(100, 50));
+    
+//    area.removeFromBottom(50);
+//    inspectButton.setBounds (getLocalBounds().withSizeKeepingCentre(100, 50));
+     
+    tempoLabel.setBounds (10, 10, getWidth() - 20, getHeight() - 20);
+}
+ 
+
+void PluginEditor::timerCallback()
+{
+    auto tempo = processorRef.tempoEstimate.load(std::memory_order_relaxed);
+ 
+    tempoLabel.setText(juce::String(tempo, 2), juce::dontSendNotification);
 }

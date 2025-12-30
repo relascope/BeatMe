@@ -39,7 +39,15 @@ public:
 
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
+    
+    std::atomic<double> tempoEstimate {0.0};
 private:
+    BTrack bTrack;
+
+
+    std::vector<double> frameBuffer; // Use double for BTrack
+    int writeIndex = 0;
+    const int frameSize = 1024;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

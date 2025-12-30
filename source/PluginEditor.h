@@ -6,6 +6,7 @@
 
 //==============================================================================
 class PluginEditor : public juce::AudioProcessorEditor
+    , private juce::Timer
 {
 public:
     explicit PluginEditor (PluginProcessor&);
@@ -14,6 +15,8 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    
+    void timerCallback() override;
 
 private:
     // This reference is provided as a quick way for your editor to
@@ -21,5 +24,8 @@ private:
     PluginProcessor& processorRef;
     std::unique_ptr<melatonin::Inspector> inspector;
     juce::TextButton inspectButton { "Inspect the UI" };
+    
+    juce::Label tempoLabel;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };
