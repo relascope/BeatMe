@@ -172,6 +172,35 @@ target_compile_definitions(SharedCode
     PRODUCT_NAME_WITHOUT_VERSION="Pamplejuce"
 )
 
+
+
+
+add_library(asio INTERFACE)
+
+target_include_directories(asio
+    INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/asio/asio/include
+)
+
+# Ableton Link expects standalone Asio
+target_compile_definitions(asio
+    INTERFACE
+        ASIO_STANDALONE
+)
+
+target_compile_definitions(SharedCode
+    INTERFACE
+        LINK_PLATFORM_ASIO
+        LINK_PLATFORM_MACOS
+)
+
+add_subdirectory(vendor/ableton-link EXCLUDE_FROM_ALL)
+target_include_directories(SharedCode
+    INTERFACE
+        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/include"
+)
+
+
 # Link to any other modules you added (with juce_add_module) here!
 # Usually JUCE modules must have PRIVATE visibility
 # See https://github.com/juce-framework/JUCE/blob/master/docs/CMake%20API.md#juce_add_module
@@ -179,6 +208,7 @@ target_compile_definitions(SharedCode
 # This allows the JUCE plugin targets and the Tests target to link against it
 target_link_libraries(SharedCode
     INTERFACE
+    asio
     Assets
     BTrack
     melatonin_inspector
@@ -189,7 +219,9 @@ target_link_libraries(SharedCode
     juce_gui_extra
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags
-    juce::juce_recommended_warning_flags)
+    juce::juce_recommended_warning_flags
+    Link
+    )
 
 # Link the JUCE plugin targets our SharedCode target
 target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)

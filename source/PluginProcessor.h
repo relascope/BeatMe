@@ -7,6 +7,7 @@
 #endif
 
 #include "BTrack.h"
+#include <ableton/Link.hpp>
 
 class PluginProcessor : public juce::AudioProcessor
 {

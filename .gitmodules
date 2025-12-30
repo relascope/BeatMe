@@ -17,3 +17,9 @@
 [submodule "vendor/BTrack"]
 	path = vendor/BTrack
 	url = https://github.com/adamstark/BTrack.git
+[submodule "vendor/ableton-link"]
+	path = vendor/ableton-link
+	url = https://github.com/Ableton/link.git
+[submodule "vendor/asio"]
+	path = vendor/asio
+	url = https://github.com/chriskohlhoff/asio.git
