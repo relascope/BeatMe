@@ -188,16 +188,28 @@ target_compile_definitions(asio
         ASIO_STANDALONE
 )
 
-target_compile_definitions(SharedCode
+target_compile_definitions(Link
+    PUBLIC
+        ASIO_STANDALONE
+)
+
+target_compile_definitions(Link
     INTERFACE
         LINK_PLATFORM_ASIO
         LINK_PLATFORM_MACOS
 )
 
 add_subdirectory(vendor/ableton-link EXCLUDE_FROM_ALL)
+
+target_link_libraries(Link
+    PUBLIC
+        asio
+)
+
 target_include_directories(SharedCode
     INTERFACE
-        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/include"
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/modules
 )
 
 
