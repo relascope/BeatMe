@@ -13,6 +13,27 @@ include(PamplejuceMacOS)
 # Couple tweaks that IMO should be JUCE defaults
 include(JUCEDefaults)
 
+
+
+# Ableton Link expects standalone Asio
+add_compile_definitions(
+#    LINK_PLATFORM_MACOS
+    LINK_PLATFORM_ASIO
+    ASIO_STANDALONE
+)
+
+add_library(asio INTERFACE)
+target_include_directories(asio
+    INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/asio/asio/include
+)
+
+#add_subdirectory(vendor/ableton-link EXCLUDE_FROM_ALL)
+
+
+
+
+
 # Change me!
 # This is the internal name of the project and the name of JUCE's shared code target
 # Note: This cannot have spaces (it may be 2024, but you can't have it all!)
@@ -172,46 +193,13 @@ target_compile_definitions(SharedCode
     PRODUCT_NAME_WITHOUT_VERSION="Pamplejuce"
 )
 
-
-
-
-add_library(asio INTERFACE)
-
-target_include_directories(asio
-    INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/asio/asio/include
-)
-
-# Ableton Link expects standalone Asio
-target_compile_definitions(asio
-    INTERFACE
-        ASIO_STANDALONE
-)
-
-target_compile_definitions(Link
-    PUBLIC
-        ASIO_STANDALONE
-)
-
-target_compile_definitions(Link
-    INTERFACE
-        LINK_PLATFORM_ASIO
-        LINK_PLATFORM_MACOS
-)
-
-add_subdirectory(vendor/ableton-link EXCLUDE_FROM_ALL)
-
-target_link_libraries(Link
-    PUBLIC
-        asio
-)
-
 target_include_directories(SharedCode
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/include
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/modules
 )
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/vendor/ableton-link/AbletonLinkConfig.cmake)
 
 # Link to any other modules you added (with juce_add_module) here!
 # Usually JUCE modules must have PRIVATE visibility
@@ -220,6 +208,7 @@ target_include_directories(SharedCode
 # This allows the JUCE plugin targets and the Tests target to link against it
 target_link_libraries(SharedCode
     INTERFACE
+    Ableton::Link
     asio
     Assets
     BTrack
@@ -232,7 +221,6 @@ target_link_libraries(SharedCode
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags
     juce::juce_recommended_warning_flags
-    Link
     )
 
 # Link the JUCE plugin targets our SharedCode target
