@@ -45,10 +45,11 @@ public:
 private:
     BTrack bTrack;
 
-
     std::vector<double> frameBuffer; // Use double for BTrack
     int writeIndex = 0;
     const int frameSize = 1024;
+    
+    ableton::Link link { 120.0 };
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

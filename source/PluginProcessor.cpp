@@ -3,19 +3,21 @@
 
 //==============================================================================
 PluginProcessor::PluginProcessor()
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+    : AudioProcessor (BusesProperties()
+#if !JucePlugin_IsMidiEffect
+    #if !JucePlugin_IsSynth
+              .withInput ("Input", juce::AudioChannelSet::stereo(), true)
+    #endif
+              .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+      )
 {
+    link.enable (true);
 }
 
 PluginProcessor::~PluginProcessor()
 {
+    link.enable (false);
 }
 
 //==============================================================================
@@ -26,29 +28,29 @@ const juce::String PluginProcessor::getName() const
 
 bool PluginProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool PluginProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool PluginProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double PluginProcessor::getTailLengthSeconds() const
@@ -58,8 +60,8 @@ double PluginProcessor::getTailLengthSeconds() const
 
 int PluginProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    return 1; // NB: some hosts don't cope very well if you tell them there are 0 programs,
+        // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int PluginProcessor::getCurrentProgram()
@@ -89,9 +91,11 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
-    
-    frameBuffer.resize(1024);
-    bTrack.updateHopAndFrameSize(512, 1024);
+
+    frameBuffer.resize (1024);
+    bTrack.updateHopAndFrameSize (512, 1024);
+
+    link.enable (true);
 }
 
 void PluginProcessor::releaseResources()
@@ -102,35 +106,35 @@ void PluginProcessor::releaseResources()
 
 bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
     return true;
-  #else
+#else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
     // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+    #if !JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+    #endif
 
     return true;
-  #endif
+#endif
 }
 
 #include <iostream>
 
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
-                                              juce::MidiBuffer& midiMessages)
+    juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
@@ -141,23 +145,37 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
-    auto* channelData = buffer.getReadPointer(0); // Mono
+
+    auto* channelData = buffer.getReadPointer (0); // Mono
     auto numSamples = buffer.getNumSamples();
 
     for (int i = 0; i < numSamples; ++i)
     {
-        frameBuffer[writeIndex++] = static_cast<double>(channelData[i]);
+        frameBuffer[writeIndex++] = static_cast<double> (channelData[i]);
 
         if (writeIndex >= frameSize)
         {
-            bTrack.processAudioFrame(frameBuffer.data());
+            bTrack.processAudioFrame (frameBuffer.data());
             if (bTrack.beatDueInCurrentFrame())
             {
-              tempoEstimate.store(bTrack.getCurrentTempoEstimate(),
-                                    std::memory_order_relaxed);
+                auto tempo = bTrack.getCurrentTempoEstimate();
+
+                auto timeInMs = link.clock().micros();
+
+                // TODO calc REAL beatTime in frame
+                //                bTrack.getBeatTimeInSeconds(<#long frameNumber#>, <#int hopSize#>, <#int fs#>)
+
+                tempoEstimate.store (tempo,
+                    std::memory_order_relaxed);
+
+                auto sessionState = link.captureAudioSessionState();
+
+                sessionState.setTempo (tempo, timeInMs);
+                sessionState.setIsPlaying(true, timeInMs);
+
+                link.commitAudioSessionState (sessionState);
             }
-            
+
             writeIndex = 0; // Reset for next frame
         }
     }
