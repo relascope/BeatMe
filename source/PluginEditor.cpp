@@ -29,7 +29,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     linkAttachment = std::make_unique<
         juce::AudioProcessorValueTreeState::ButtonAttachment>(
             processorRef.getAPVTS(),
-            "isLinkEnabledParameterID",
+            processorRef.isLinkEnabledParameterID,
             linkToggle
         );
     addAndMakeVisible(linkToggle);

@@ -53,7 +53,8 @@ public:
     void sendTempoToLink(double tempo);
     
     double getTempoEstimate() { return tempoEstimate.load(std::memory_order_acquire); }
-    
+   
+    juce::String isLinkEnabledParameterID = "isLinkEnabledParameterID";
 protected:
     void setTempoEstimate(double newTempoEstimate) { tempoEstimate.store(newTempoEstimate, std::memory_order_release); }
 
@@ -69,7 +70,6 @@ private:
     ableton::Link link { 120.0 };
     
     juce::AudioProcessorValueTreeState apvts;
-    // const char* isLinkEnabledParameterID = "isLinkEnabledParameterID";
     
     std::atomic<bool> isLinkEnabled { true };
 
