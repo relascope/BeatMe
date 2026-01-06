@@ -40,13 +40,15 @@ public:
     void setCurrentProgram (int index) override;
     const juce::String getProgramName (int index) override;
     void changeProgramName (int index, const juce::String& newName) override;
-    
-    
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    void parameterChanged(const juce::String& id, float value) override;
 
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    /// BEGIN BTrackAbletonLink specific
+    
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    void parameterChanged(const juce::String& id, float value) override;
+    juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
     
     void sendTempoToLink(double tempo);
     
@@ -67,7 +69,7 @@ private:
     ableton::Link link { 120.0 };
     
     juce::AudioProcessorValueTreeState apvts;
-    const juce::String isLinkEnabledParameterName = "isLinkEnabled";
+    // const char* isLinkEnabledParameterID = "isLinkEnabledParameterID";
     
     std::atomic<bool> isLinkEnabled { true };
 

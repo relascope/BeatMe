@@ -27,5 +27,10 @@ private:
     
     juce::Label tempoLabel;
     
+    juce::ToggleButton linkToggle;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
+        linkAttachment;
+
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

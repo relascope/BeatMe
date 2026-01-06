@@ -11,16 +11,16 @@ PluginProcessor::PluginProcessor()
               .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       )
-    , apvts(*this, nullptr, "PARAMS", createParameterLayout())
+    , apvts(*this, nullptr, juce::Identifier("PARAMS"), createParameterLayout())
 {
     link.enable (true);
-    apvts.addParameterListener(isLinkEnabledParameterName, this);
+    apvts.addParameterListener("isLinkEnabledParameterID", this);
 }
 
 PluginProcessor::~PluginProcessor()
 {
     link.enable (false);
-    apvts.removeParameterListener(isLinkEnabledParameterName, this);
+    apvts.removeParameterListener("isLinkEnabledParameterID", this);
 }
 
 //==============================================================================
@@ -224,18 +224,17 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
 {
-    return {
+    return 
         std::make_unique<juce::AudioParameterBool>(
-            "isLinkEnabled",
-            "Ableton Link Enabled",
-            true
-        )
-    };
+                                                   juce::ParameterID("isLinkEnabledParameterID", 3),
+                                                   "Ableton Link Enabled",
+                                                   true
+                                                   );
 }
 
 void PluginProcessor::parameterChanged(const juce::String& id, float value)
 {
-    if (id == isLinkEnabledParameterName) {
+    if (id == "isLinkEnabledParameterID") {
         bool linkEnabled = value > 0.5f;
         isLinkEnabled.store(linkEnabled, std::memory_order_relaxed);
             link.enable(linkEnabled);

@@ -22,9 +22,19 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     
     tempoLabel.setText ("--.- BPM", juce::dontSendNotification);
     tempoLabel.setJustificationType (juce::Justification::centred);
-    
- 
     addAndMakeVisible (tempoLabel);
+    
+    linkToggle.setButtonText("Ableton Link");
+    linkToggle.setBounds(30, 30, 100, 30);
+    linkAttachment = std::make_unique<
+        juce::AudioProcessorValueTreeState::ButtonAttachment>(
+            processorRef.getAPVTS(),
+            "isLinkEnabledParameterID",
+            linkToggle
+        );
+    addAndMakeVisible(linkToggle);
+
+    // UI Update Timer (query BPM)
     startTimerHz (30);
 
     // Make sure that before the constructor has finished, you've set the
