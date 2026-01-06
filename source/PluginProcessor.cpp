@@ -13,8 +13,15 @@ PluginProcessor::PluginProcessor()
       )
     , apvts(*this, nullptr, juce::Identifier("PARAMS"), createParameterLayout())
 {
-    link.enable (true);
     apvts.addParameterListener(isLinkEnabledParameterID, this);
+
+    // Synchronize the atomic with the parameter's initial value
+    if (auto* param = apvts.getRawParameterValue(isLinkEnabledParameterID))
+    {
+        bool linkEnabled = param->load() > 0.5f;
+        isLinkEnabled.store(linkEnabled, std::memory_order_relaxed);
+        link.enable(linkEnabled);
+    }
 }
 
 PluginProcessor::~PluginProcessor()
@@ -97,8 +104,6 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     frameBuffer.resize (1024);
     bTrack.updateHopAndFrameSize (512, 1024);
-
-    link.enable (true);
 }
 
 void PluginProcessor::releaseResources()
@@ -201,17 +206,18 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 //==============================================================================
 void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    juce::ignoreUnused (destData);
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
 void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-    juce::ignoreUnused (data, sizeInBytes);
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (apvts.state.getType()))
+            apvts.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================
