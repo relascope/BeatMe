@@ -165,8 +165,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 // TODO calc REAL beatTime in frame
                 //                bTrack.getBeatTimeInSeconds(<#long frameNumber#>, <#int hopSize#>, <#int fs#>)
 
-                tempoEstimate.store (tempo,
-                    std::memory_order_relaxed);
+                setTempoEstimate(tempo);
 
                 auto sessionState = link.captureAudioSessionState();
 

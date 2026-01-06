@@ -41,13 +41,19 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     
-    std::atomic<double> tempoEstimate {0.0};
+    double getTempoEstimate() { return tempoEstimate.load(std::memory_order_acquire); }
+    
+protected:
+    void setTempoEstimate(double newTempoEstimate) { tempoEstimate.store(newTempoEstimate, std::memory_order_release); }
+
 private:
     BTrack bTrack;
 
     std::vector<double> frameBuffer; // Use double for BTrack
     int writeIndex = 0;
     const int frameSize = 1024;
+    
+    std::atomic<double> tempoEstimate {0.0};
     
     ableton::Link link { 120.0 };
     

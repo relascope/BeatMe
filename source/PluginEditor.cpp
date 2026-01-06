@@ -64,7 +64,7 @@ void PluginEditor::resized()
 
 void PluginEditor::timerCallback()
 {
-    auto tempo = processorRef.tempoEstimate.load(std::memory_order_relaxed);
+    auto tempo = processorRef.getTempoEstimate();
  
     tempoLabel.setText(juce::String(tempo, 2), juce::dontSendNotification);
 }
