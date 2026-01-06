@@ -10,6 +10,7 @@
 #include <ableton/Link.hpp>
 
 class PluginProcessor : public juce::AudioProcessor
+    , public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     PluginProcessor();
@@ -20,6 +21,8 @@ public:
 
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
 
+    void extracted(double tempo);
+    
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     juce::AudioProcessorEditor* createEditor() override;
@@ -40,10 +43,12 @@ public:
     
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    void parameterChanged(const juce::String& id, float value);
+    void parameterChanged(const juce::String& id, float value) override;
 
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    void sendTempoToLink(double tempo);
     
     double getTempoEstimate() { return tempoEstimate.load(std::memory_order_acquire); }
     
@@ -62,8 +67,9 @@ private:
     ableton::Link link { 120.0 };
     
     juce::AudioProcessorValueTreeState apvts;
-
-    std::atomic<bool> linkEnabled { true };
+    const juce::String isLinkEnabledParameterName = "isLinkEnabled";
+    
+    std::atomic<bool> isLinkEnabled { true };
 
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)

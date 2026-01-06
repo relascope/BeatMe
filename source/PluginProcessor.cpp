@@ -14,12 +14,13 @@ PluginProcessor::PluginProcessor()
     , apvts(*this, nullptr, "PARAMS", createParameterLayout())
 {
     link.enable (true);
-    //apvts.addParameterListener("isLinkEnabled", this);
+    apvts.addParameterListener(isLinkEnabledParameterName, this);
 }
 
 PluginProcessor::~PluginProcessor()
 {
     link.enable (false);
+    apvts.removeParameterListener(isLinkEnabledParameterName, this);
 }
 
 //==============================================================================
@@ -130,6 +131,19 @@ bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 
 #include <iostream>
 
+void PluginProcessor::sendTempoToLink(double tempo) {
+    if (!isLinkEnabled.load(std::memory_order_relaxed))
+        return;
+    
+    auto timeInMs = link.clock().micros();
+    auto sessionState = link.captureAudioSessionState();
+    
+    sessionState.setTempo (tempo, timeInMs);
+    sessionState.setIsPlaying(true, timeInMs);
+    
+    link.commitAudioSessionState (sessionState);
+}
+
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::MidiBuffer& midiMessages)
 {
@@ -161,20 +175,11 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             if (bTrack.beatDueInCurrentFrame())
             {
                 auto tempo = bTrack.getCurrentTempoEstimate();
-
-                auto timeInMs = link.clock().micros();
-
-                // TODO calc REAL beatTime in frame
-                //                bTrack.getBeatTimeInSeconds(<#long frameNumber#>, <#int hopSize#>, <#int fs#>)
-
                 setTempoEstimate(tempo);
-
-                auto sessionState = link.captureAudioSessionState();
-
-                sessionState.setTempo (tempo, timeInMs);
-                sessionState.setIsPlaying(true, timeInMs);
-
-                link.commitAudioSessionState (sessionState);
+                // TODO calc REAL beatTime in frame
+                //                bTrack.getBeatTimeInSeconds(long frameNumber, <#int hopSize#>, <#int fs#>)
+                
+                sendTempoToLink(tempo);
             }
 
             writeIndex = 0; // Reset for next frame
@@ -230,6 +235,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
 
 void PluginProcessor::parameterChanged(const juce::String& id, float value)
 {
-    if (id == "linkEnabled")
-        linkEnabled.store(value > 0.5f, std::memory_order_relaxed);
+    if (id == isLinkEnabledParameterName) {
+        bool linkEnabled = value > 0.5f;
+        isLinkEnabled.store(linkEnabled, std::memory_order_relaxed);
+            link.enable(linkEnabled);
+    }
 }
