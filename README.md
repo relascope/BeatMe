@@ -1,3 +1,16 @@
+# BTrackLink
+
+BTrackLink is for realtime tracking of beats in audio and synchronizing it to other programs or devices with Ableton Link. 
+
+The main use case is for practicing music with a backing track running and synchronizing the tempo to the Soundbrenner Pulse vibration metronome.
+
+# Build
+
+CMake based
+
+# Project is based on Pamplejuce
+
+
 ![PAMPLEJUCE](assets/images/pamplejuce.png)
 [![](https://github.com/sudara/pamplejuce/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/sudara/pamplejuce/actions)
 
