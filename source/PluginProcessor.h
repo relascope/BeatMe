@@ -51,8 +51,9 @@ public:
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
     
     void sendTempoToLink(double tempo);
+    void ignoreIncomingBpmChange(double newBPM);
     
-    double getTempoEstimate() { return tempoEstimate.load(std::memory_order_acquire); }
+    double getTempoEstimate() const { return tempoEstimate.load(std::memory_order_acquire); }
    
     juce::String isLinkEnabledParameterID = "isLinkEnabledParameterID";
 protected:

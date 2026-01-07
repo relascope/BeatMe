@@ -22,6 +22,8 @@ PluginProcessor::PluginProcessor()
         isLinkEnabled.store(linkEnabled, std::memory_order_relaxed);
         link.enable(linkEnabled);
     }
+
+    link.setTempoCallback ([this] (double bpm) { ignoreIncomingBpmChange (bpm); });
 }
 
 PluginProcessor::~PluginProcessor()
@@ -134,7 +136,11 @@ bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 #endif
 }
 
-#include <iostream>
+void PluginProcessor::ignoreIncomingBpmChange(double newBPM)
+{
+    juce::ignoreUnused (newBPM);
+    sendTempoToLink(getTempoEstimate());
+}
 
 void PluginProcessor::sendTempoToLink(double tempo) {
     if (!isLinkEnabled.load(std::memory_order_relaxed))
