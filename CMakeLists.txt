@@ -38,7 +38,7 @@ target_include_directories(asio
 # This is the internal name of the project and the name of JUCE's shared code target
 # Note: This cannot have spaces (it may be 2024, but you can't have it all!)
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is what DAWs display)
-set(PROJECT_NAME "BTrackLink")
+set(PROJECT_NAME "BeatME")
 
 # Worry not, JUCE's PRODUCT_NAME can have spaces (and is what DAWs will display)
 # You can also just have it be the same thing as PROJECT_NAME
@@ -46,13 +46,13 @@ set(PROJECT_NAME "BTrackLink")
 #   set(PROJECT_NAME "MyPlugin_v${MAJOR_VERSION}")
 # Doing so enables major versions to show up in IDEs and DAWs as separate plugins
 # allowing you to change parameters and behavior without breaking existing user projects
-set(PRODUCT_NAME "BTrackLink")
+set(PRODUCT_NAME "BeatMe")
 
 # Change me! Used for the MacOS bundle name and Installers
 set(COMPANY_NAME "DoJoy.at")
 
 # Change me! Used for the MacOS bundle identifier (and signing)
-set(BUNDLE_ID "at.dojoy.btracklink")
+set(BUNDLE_ID "at.dojoy.beatme")
 
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
@@ -88,7 +88,7 @@ juce_add_plugin("${PROJECT_NAME}"
 
     # Change me!
     COMPANY_NAME "DoJoy.at"
-    BUNDLE_ID "at.dojoy.btracklink"
+    BUNDLE_ID "at.dojoy.beatme"
 
     # On MacOS, plugin is copied to /Users/yourname/Library/Audio/Plug-Ins/
     COPY_PLUGIN_AFTER_BUILD TRUE
@@ -108,7 +108,7 @@ juce_add_plugin("${PROJECT_NAME}"
     # This is how it's listed in the DAW
     # This can be different from PROJECT_NAME and can have spaces!
     # You might want to use v${MAJOR_VERSION} here once you go to v2...
-    PRODUCT_NAME "BtrackLink")
+    PRODUCT_NAME "BeatMe")
 
 # This lets us use our code in both the JUCE targets and our Test target
 # Without running into ODR violations
