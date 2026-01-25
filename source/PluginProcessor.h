@@ -51,6 +51,7 @@ public:
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
     
     void sendTempoToLink(double tempo);
+    void sumInputChannelsToMono(const juce::AudioBuffer<float>& buffer);
     void ignoreIncomingBpmChange(double newBPM);
     
     double getTempoEstimate() const { return tempoEstimate.load(std::memory_order_acquire); }
@@ -61,7 +62,8 @@ protected:
 
 private:
     BTrack bTrack;
-
+    
+    juce::AudioBuffer<float> monoBuffer;
     std::vector<double> frameBuffer; // Use double for BTrack
     int writeIndex = 0;
     const int frameSize = 1024;

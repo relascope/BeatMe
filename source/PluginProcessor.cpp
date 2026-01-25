@@ -103,6 +103,9 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
+    
+    monoBuffer.setSize(1, samplesPerBlock, false, false, true);
+    monoBuffer.clear();
 
     frameBuffer.resize (1024);
     bTrack.updateHopAndFrameSize (512, 1024);
@@ -155,6 +158,21 @@ void PluginProcessor::sendTempoToLink(double tempo) {
     link.commitAudioSessionState (sessionState);
 }
 
+void PluginProcessor::sumInputChannelsToMono (const juce::AudioBuffer<float>& buffer)
+{
+    const int totalNumInputChannels = getTotalNumInputChannels();
+    const int numSamples = buffer.getNumSamples();
+    monoBuffer.clear();
+
+    if (totalNumInputChannels > 0)
+    {
+        for (int channel = 0; channel < totalNumInputChannels; ++channel)
+        {
+            monoBuffer.addFrom (0, 0, buffer, channel, 0, numSamples, 1.0f / static_cast<float> (totalNumInputChannels));
+        }
+    }
+}
+
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::MidiBuffer& midiMessages)
 {
@@ -172,10 +190,11 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
-    auto* channelData = buffer.getReadPointer (0); // Mono
+    
+    sumInputChannelsToMono (buffer);
+    
+    auto* channelData = monoBuffer.getReadPointer (0);
     auto numSamples = buffer.getNumSamples();
-
     for (int i = 0; i < numSamples; ++i)
     {
         frameBuffer[writeIndex++] = static_cast<double> (channelData[i]);
