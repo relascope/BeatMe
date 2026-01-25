@@ -52,6 +52,7 @@ public:
     
     void sendTempoToLink(double tempo);
     void sumInputChannelsToMono(const juce::AudioBuffer<float>& buffer);
+    void resampleMonoBuffer();
     void ignoreIncomingBpmChange(double newBPM);
     
     double getTempoEstimate() const { return tempoEstimate.load(std::memory_order_acquire); }
@@ -64,6 +65,10 @@ private:
     BTrack bTrack;
     
     juce::AudioBuffer<float> monoBuffer;
+    juce::AudioBuffer<float> resampledBuffer;
+    double currentSampleRate = 44100.0;
+    const double targetSampleRate = 44100.0;
+
     std::vector<double> frameBuffer; // Use double for BTrack
     int writeIndex = 0;
     const int frameSize = 1024;

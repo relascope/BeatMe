@@ -102,10 +102,14 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    currentSampleRate = sampleRate;
     
     monoBuffer.setSize(1, samplesPerBlock, false, false, true);
     monoBuffer.clear();
+
+    const int resampledBufferSize = static_cast<int>(std::ceil(samplesPerBlock * targetSampleRate / currentSampleRate)) + 10;
+    resampledBuffer.setSize(1, resampledBufferSize, false, false, true);
+    resampledBuffer.clear();
 
     frameBuffer.resize (1024);
     bTrack.updateHopAndFrameSize (512, 1024);
@@ -173,6 +177,27 @@ void PluginProcessor::sumInputChannelsToMono (const juce::AudioBuffer<float>& bu
     }
 }
 
+void PluginProcessor::resampleMonoBuffer()
+{
+    if (std::abs(currentSampleRate - targetSampleRate) < 0.01)
+    {
+        resampledBuffer.makeCopyOf(monoBuffer);
+        return;
+    }
+
+    juce::MemoryAudioSource memorySource(monoBuffer, false);
+    juce::ResamplingAudioSource resamplerSource(&memorySource, false, 1);
+    
+    resamplerSource.setResamplingRatio(currentSampleRate / targetSampleRate);
+    resamplerSource.prepareToPlay(monoBuffer.getNumSamples(), currentSampleRate);
+    
+    const int numSamplesExpected = static_cast<int>(std::ceil(monoBuffer.getNumSamples() * targetSampleRate / currentSampleRate));
+    resampledBuffer.setSize(1, numSamplesExpected, false, false, true);
+    
+    juce::AudioSourceChannelInfo info(&resampledBuffer, 0, numSamplesExpected);
+    resamplerSource.getNextAudioBlock(info);
+}
+
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::MidiBuffer& midiMessages)
 {
@@ -193,8 +218,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     sumInputChannelsToMono (buffer);
     
-    auto* channelData = monoBuffer.getReadPointer (0);
-    auto numSamples = buffer.getNumSamples();
+    resampleMonoBuffer();
+    
+    auto* channelData = resampledBuffer.getReadPointer (0);
+    auto numSamples = resampledBuffer.getNumSamples();
     for (int i = 0; i < numSamples; ++i)
     {
         frameBuffer[writeIndex++] = static_cast<double> (channelData[i]);
