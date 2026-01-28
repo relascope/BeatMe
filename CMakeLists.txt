@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.6)
 
 # This tells cmake we have goodies in the /cmake folder
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -118,8 +118,15 @@ add_library(SharedCode INTERFACE)
 # BTrack (vendor library)
 # ===============================
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SAMPLERATE REQUIRED samplerate IMPORTED_TARGET)
+CPMAddPackage(
+        NAME libsamplerate
+        GITHUB_REPOSITORY libsndfile/libsamplerate
+        GIT_TAG 2ccde9568cca73c7b32c97fefca2e418c16ae5e3
+        OPTIONS
+        "LIBSAMPLERATE_EXAMPLES OFF"
+        "LIBSAMPLERATE_INSTALL OFF"
+        "BUILD_TESTING OFF"
+)
 
 
 file(GLOB BTRACK_SOURCES
@@ -134,13 +141,11 @@ target_include_directories(BTrack
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/vendor/BTrack/src"
         "${CMAKE_CURRENT_SOURCE_DIR}/vendor/BTrack/libs/kiss_fft130"
-        ${SAMPLERATE_INCLUDE_DIRS}
-
 )	
 
 target_link_libraries(BTrack
     PUBLIC
-        PkgConfig::SAMPLERATE
+        samplerate
 )
 
 # Use bundled KissFFT
