@@ -8,6 +8,16 @@ The main use case is for practicing music with a backing track running and synch
 
 CMake based
 
+# Dependencies
+
+libsamplerate
+
+    brew install libsamplerate
+
+Project uses git submodules.
+
+    git submodule update --init --recursive
+
 # Project is based on Pamplejuce
 
 
