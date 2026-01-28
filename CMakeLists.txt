@@ -190,7 +190,7 @@ target_compile_definitions(SharedCode
     VERSION="${CURRENT_VERSION}"
 
     # JucePlugin_Name is for some reason doesn't use the nicer PRODUCT_NAME
-    PRODUCT_NAME_WITHOUT_VERSION="Pamplejuce"
+        PRODUCT_NAME_WITHOUT_VERSION="BeatMe"
 )
 
 target_include_directories(SharedCode
