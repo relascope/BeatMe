@@ -15,7 +15,7 @@ TEST_CASE ("Plugin instance", "[instance]")
     SECTION ("name")
     {
         CHECK_THAT (testPlugin.getName().toStdString(),
-            Catch::Matchers::Equals ("BeatMe"));
+                    Catch::Matchers::Equals ("BeatMe"));
     }
 }
 
