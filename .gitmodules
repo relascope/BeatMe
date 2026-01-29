@@ -20,6 +20,3 @@
 [submodule "vendor/asio"]
 	path = vendor/asio
 	url = https://github.com/chriskohlhoff/asio.git
-[submodule "vendor/BTrack"]
-	path = vendor/BTrack
-	url = https://github.com/relascope/BTrack.git
