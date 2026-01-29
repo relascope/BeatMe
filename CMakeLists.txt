@@ -151,6 +151,7 @@ target_link_libraries(BTrack
 # Use bundled KissFFT
 target_compile_definitions(BTrack
     PUBLIC
+        _USE_MATH_DEFINES # M_PI
         USE_KISS_FFT
 )
 
