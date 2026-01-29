@@ -100,7 +100,10 @@ jobs:
 
       - name: Test & Benchmarks
         working-directory: ${{ env.BUILD_DIR }}
-        run: ctest --verbose --output-on-failure
+        run: | 
+          vlimit -n 4096 
+          vlimit -s unlimited 
+          ctest --verbose --output-on-failure
 
       - name: Read in .env from CMake # see GitHubENV.cmake
         run: |
