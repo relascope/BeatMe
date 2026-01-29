@@ -14,15 +14,8 @@ PluginProcessor::PluginProcessor()
     , apvts(*this, nullptr, juce::Identifier("PARAMS"), createParameterLayout())
 {
     apvts.addParameterListener(isLinkEnabledParameterID, this);
-
-    // Synchronize the atomic with the parameter's initial value
-    if (auto* param = apvts.getRawParameterValue(isLinkEnabledParameterID))
-    {
-        bool linkEnabled = param->load() > 0.5f;
-        isLinkEnabled.store(linkEnabled, std::memory_order_relaxed);
-        link.enable(linkEnabled);
-    }
-
+    
+    link.enable(false);
     link.setTempoCallback ([this] (double bpm) { ignoreIncomingBpmChange (bpm); });
 }
 
@@ -100,8 +93,14 @@ void PluginProcessor::changeProgramName (int index, const juce::String& newName)
 //==============================================================================
 void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    // Synchronize the atomic with the parameter's initial value
+    if (auto* param = apvts.getRawParameterValue(isLinkEnabledParameterID))
+    {
+        bool linkEnabled = param->load() > 0.5f;
+        isLinkEnabled.store(linkEnabled, std::memory_order_relaxed);
+        link.enable(linkEnabled);
+    }
+    
     currentSampleRate = sampleRate;
     
     monoBuffer.setSize(1, samplesPerBlock, false, false, true);
