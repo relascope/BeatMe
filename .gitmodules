@@ -14,9 +14,6 @@
 	path = modules/clap-juce-extensions
 	url = https://github.com/free-audio/clap-juce-extensions.git
 	branch = main
-[submodule "vendor/BTrack"]
-	path = vendor/BTrack
-	url = https://github.com/adamstark/BTrack.git
 [submodule "vendor/ableton-link"]
 	path = vendor/ableton-link
 	url = https://github.com/Ableton/link.git
