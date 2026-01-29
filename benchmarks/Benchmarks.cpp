@@ -1,32 +1,23 @@
 TEST_CASE ("Boot performance")
 {
-    BENCHMARK_ADVANCED ("Processor constructor")
-    (Catch::Benchmark::Chronometer meter)
+    BENCHMARK ("Processor constructor")
     {
-        std::vector<Catch::Benchmark::storage_for<PluginProcessor>> storage (size_t (meter.runs()));
-        meter.measure ([&] (int i) { storage[(size_t) i].construct(); });
+        return PluginProcessor();
     };
 
-    BENCHMARK_ADVANCED ("Processor destructor")
-    (Catch::Benchmark::Chronometer meter)
+    BENCHMARK ("Processor destructor")
     {
-        std::vector<Catch::Benchmark::destructable_object<PluginProcessor>> storage (size_t (meter.runs()));
-        for (auto& s : storage)
-            s.construct();
-        meter.measure ([&] (int i) { storage[(size_t) i].destruct(); });
+        auto p = std::make_unique<PluginProcessor>();
+        p.reset();
+        return p;
     };
 
-    BENCHMARK_ADVANCED ("Editor open and close")
-    (Catch::Benchmark::Chronometer meter)
+    BENCHMARK ("Editor open and close")
     {
         PluginProcessor plugin;
-
-        // due to complex construction logic of the editor, let's measure open/close together
-        meter.measure ([&] (int /* i */) {
-            auto editor = plugin.createEditorIfNeeded();
-            plugin.editorBeingDeleted (editor);
-            delete editor;
-            return plugin.getActiveEditor();
-        });
+        auto editor = plugin.createEditorIfNeeded();
+        plugin.editorBeingDeleted (editor);
+        delete editor;
+        return plugin.getActiveEditor();
     };
 }
